@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const authRoute = require('./routes/auth');
+const noteRoute = require('./routes/note');
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cors());
 
 
 app.use('/auth', authRoute);
+app.use('/todolist', noteRoute);
 
 
 app.use((error, req, res, next) => {

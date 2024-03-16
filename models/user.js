@@ -8,7 +8,11 @@ const userSchema = new Schema({
         type : String,
         required : true,
         unique : true
-    }
+    },
+    note : [{
+        type : Schema.Types.ObjectId,
+        ref : 'Note',
+    }]
 
 }, {timestamps : true});
 
