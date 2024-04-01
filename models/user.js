@@ -9,10 +9,27 @@ const userSchema = new Schema({
         required : true,
         unique : true
     },
-    note : [{
-        type : Schema.Types.ObjectId,
-        ref : 'Note',
-    }]
+    email : {
+        type : String,
+        required : true,
+        unique : true
+    },
+    password : {
+        type : String,
+        required : true,
+        length : {
+            min : 6
+        }
+    },
+    gender : {
+        type : String,
+        required : true,
+        enum : ['male', 'female']
+    },
+    profilePic : {
+        type : String,
+        default : ''
+    }
 
 }, {timestamps : true});
 

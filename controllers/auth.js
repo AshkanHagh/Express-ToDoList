@@ -1,4 +1,5 @@
 const { validationResult } = require('express-validator');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
@@ -15,14 +16,34 @@ exports.signup = async (req, res, next) => {
             throw error;
         }
 
+        const { username, email, password, gender } = req.body;
+
+        const isExists = await User.findOne({username, email});
+        if(isExists) {
+
+            const error = new Error('Username || Email is already exists');
+            error.statusCode = 422;
+            throw error;
+        }
+
+        const salt = await bcrypt.genSalt(12);
+        const hashedPass = await bcrypt.hash(password, salt);
+
+        const boyProfilePic = `https://avatar.iran.liara.run/public/boy?username=${username}`;
+		const girlProfilePic = `https://avatar.iran.liara.run/public/girl?username=${username}`;
+
         const user = new User({
 
-            username : req.body.username
+            username,
+            email,
+            password : hashedPass,
+            gender,
+            profilePic : gender === 'male' ? boyProfilePic : girlProfilePic
         });
 
-        const result = await user.save();
+        await user.save();
 
-        res.status(201).json({message : 'Account has been created', user : result});
+        res.status(201).json({message : 'Account has been created', AccountId : user._id});
 
     } catch (error) {
         
@@ -35,6 +56,7 @@ exports.signup = async (req, res, next) => {
 
 }
 
+
 exports.login = async (req, res, next) => {
 
     try {
@@ -46,17 +68,27 @@ exports.login = async (req, res, next) => {
             throw error;
         }
 
-        const user = await User.findOne({username : req.body.username});
+        const { email, password } = req.body;
+
+        const user = await User.findOne({email});
         if(!user) {
 
-            const error = new Error('Wrong username, please check your username');
+            const error = new Error('Wrong email, please check your email');
             error.statusCode = 404;
             throw error;
         }
 
-        const token = jwt.sign({username : user.username, userId : user._id}, 'ToDoList', {expiresIn : '1h'});
+        const isPassword = await bcrypt.compare(password, user.password);
+        if(!isPassword) {
 
-        res.status(201).json({message : 'Welcome', userId : user._id, token : token});
+            const error = new Error('Wrong password, please check your password');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        const token = jwt.sign({email : user.email, userId : user._id}, process.env.JWT_SECRET, {expiresIn : '1d'});
+
+        res.status(201).json({message : 'enjoy', AccountId : user._id, token});
 
     } catch (error) {
         

@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-const authRoute = require('./routes/auth');
-const noteRoute = require('./routes/note');
+const authRouter = require('./routes/auth');
 
 const app = express();
 
@@ -16,8 +15,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 
-app.use('/auth', authRoute);
-app.use('/todolist', noteRoute);
+app.use('/api/auth', authRouter);
 
 
 app.use((error, req, res, next) => {
@@ -30,9 +28,9 @@ app.use((error, req, res, next) => {
     res.status(status).json({message});
 
     next();
-})
+});
 
 
 mongoose.connect(process.env.MONGODB_URL);
 
-app.listen(PORT, () => console.log(`server is running on ${PORT}`));
+app.listen(PORT, () => console.log(`server is running on port ${PORT}`));
